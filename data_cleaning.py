@@ -48,7 +48,7 @@ class DataCleaning:
             staff_corrections = {'J78' : '78', '30e':'30', '80R':'80', 'A97' :'97', "3n9" : '39'}
             store_data['staff_numbers'] = store_data['staff_numbers'].replace(staff_corrections)
             store_data['staff_numbers'] = pd.to_numeric(store_data['staff_numbers'], errors = 'coerce')
-            store_data['staff_numbers'] = store_data['staff_numbers'].astype(int)
+            store_data['staff_numbers'] = store_data['staff_numbers'].astype('int64')
             valid_country_codes = ['GB', 'DE', 'US']
             store_data = store_data[store_data['country_code'].isin(valid_country_codes)]
             store_data['country_code'] = store_data['country_code'].astype('category')
@@ -59,14 +59,13 @@ class DataCleaning:
                                            '5586JCLARW', 'GFJQ2AAEQ8', 'SLQBD982C0', 
                                            'XQ953VS0FG', '1WZB1TE1HL'])].index
             store_data = store_data.drop(rows_to_drop)
-            store_data = store_data.drop('latitude', axis = 1 )
 
             store_data['address'] = store_data['address'].astype(str)
             store_data['longitude'] = store_data['longitude'].astype(float)
             store_data['latitude'] = store_data['latitude'].astype(float)
             store_data['locality'] = store_data['locality'].astype(str)
             store_data['store_code'] = store_data['store_code'].astype(str)
-            store_data['store-type'] = store_data['store_type'].astype('category')
+            store_data['store_type'] = store_data['store_type'].astype('category')
             store_data['continent'] = store_data['continent'].astype('category')
 
         return store_data
