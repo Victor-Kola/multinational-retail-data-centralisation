@@ -40,7 +40,7 @@ class DataExtractor:
     @staticmethod
     def retrieve_stores_data(endpoint = "https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/{store_number}", header = {'x-api-key': "yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX"}):
         store_data_list = []
-        for store_number in range(1, 452):
+        for store_number in range(0, 451):
             store_endpoint = endpoint.format(store_number = store_number)
             response = requests.get(store_endpoint, headers = header)
             if response.ok:
