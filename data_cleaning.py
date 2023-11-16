@@ -33,42 +33,49 @@ class DataCleaning:
             pdf_df = pdf_df[pdf_df['card_provider'].isin(valid_providers)]
         return pdf_df
 
+
     @staticmethod
-    def called_clean_store_data(store_data):
+    def clean_store_data(store_data):
         if not isinstance(store_data, pd.DataFrame):
-            raise ValueError("This is not a pandas Dataframe.")
+            raise ValueError("Input is not a pandas DataFrame.")
         else:
             store_data.replace('NULL', np.nan, inplace=True)
-            store_data['address'] = store_data['address'].str.replace('\n', ' ', regex = False)
-            store_data = store_data.dropna(subset=['store_type'])
-            valid_store_types = ['Local', 'Super Store', 'Mall Kiosk', 'Outlet']
+            store_data['address'] = store_data['address'].str.replace('\n', ' ', regex=False)
+            store_data['opening_date'] = pd.to_datetime(store_data['opening_date'], errors='coerce', format='%Y-%m-%d')
+
+            # Include 'Web Portal' in valid store types
+            valid_store_types = ['Local', 'Super Store', 'Mall Kiosk', 'Outlet', 'Web Portal']
             store_data = store_data[store_data['store_type'].isin(valid_store_types)]
-            store_data['opening_date'] = pd.to_datetime(store_data['opening_date'], errors = 'coerce', format ='%Y-%m-%d')
+
             store_data = store_data.drop_duplicates(subset=['address'])
-            staff_corrections = {'J78' : '78', '30e':'30', '80R':'80', 'A97' :'97', "3n9" : '39'}
+
+            staff_corrections = {'J78': '78', '30e': '30', '80R': '80', 'A97': '97', "3n9": '39'}
             store_data['staff_numbers'] = store_data['staff_numbers'].replace(staff_corrections)
-            store_data['staff_numbers'] = pd.to_numeric(store_data['staff_numbers'], errors = 'coerce')
-            store_data['staff_numbers'] = store_data['staff_numbers'].astype('int64')
+            store_data['staff_numbers'] = pd.to_numeric(store_data['staff_numbers'], errors='coerce')
+            store_data['staff_numbers'] = store_data['staff_numbers'].astype('Int64', errors='ignore')
+
             valid_country_codes = ['GB', 'DE', 'US']
             store_data = store_data[store_data['country_code'].isin(valid_country_codes)]
             store_data['country_code'] = store_data['country_code'].astype('category')
 
-            continent_corrections = { 'eeEurope': 'Europe', 'eeAmerica': 'America'}
+            continent_corrections = {'eeEurope': 'Europe', 'eeAmerica': 'America'}
             store_data['continent'] = store_data['continent'].replace(continent_corrections)
             rows_to_drop = store_data[store_data['continent'].isin(['NULL', 'QMAVR5H3LD', 'LU3E036ZD9', 
-                                           '5586JCLARW', 'GFJQ2AAEQ8', 'SLQBD982C0', 
-                                           'XQ953VS0FG', '1WZB1TE1HL'])].index
+                                            '5586JCLARW', 'GFJQ2AAEQ8', 'SLQBD982C0', 
+                                            'XQ953VS0FG', '1WZB1TE1HL'])].index
             store_data = store_data.drop(rows_to_drop)
 
+            # Data type conversions
             store_data['address'] = store_data['address'].astype(str)
-            store_data['longitude'] = store_data['longitude'].astype(float)
-            store_data['latitude'] = store_data['latitude'].astype(float)
+            store_data['longitude'] = pd.to_numeric(store_data['longitude'], errors='coerce')
+            store_data['latitude'] = pd.to_numeric(store_data['latitude'], errors='coerce')
             store_data['locality'] = store_data['locality'].astype(str)
             store_data['store_code'] = store_data['store_code'].astype(str)
             store_data['store_type'] = store_data['store_type'].astype('category')
             store_data['continent'] = store_data['continent'].astype('category')
 
         return store_data
+
     @staticmethod
     def convert_product_weights(products_df):
         """Converts product weights to kg and cleans the weight column."""
