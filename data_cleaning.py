@@ -148,17 +148,28 @@ class DataCleaning:
         return clean_orders_table
 
     @staticmethod
-    def clean_events_data(events_data):
-        events_data['combined_date'] = events_data['year'].astype(str) + '-' + \
-                                     events_data['month'].astype(str) + '-' + \
-                                     events_data['day'].astype(str)
-        events_data['date'] = pd.to_datetime(events_data['combined_date'], errors='coerce') 
-        events_data = events_data.dropna(subset=['date'])
-        events_data = events_data.drop(['year', 'month', 'day', 'combined_date'], axis=1)
-        events_data['timestamp'] = pd.to_datetime(events_data['timestamp'], format='%H:%M:%S').dt.time
-        return events_data
-    
-
+    def clean_events_data(df):
+        # Handle NaN values in 'month' before filtering non-numeric values
+        df = df.dropna(subset=['month'])
+        # Drop rows with non-numeric 'month' values
+        df = df[df['month'].str.isnumeric()]
+        # Convert 'month', 'year', and 'day' to integers
+        df['month'] = df['month'].astype(int)
+        df['year'] = df['year'].astype(int)
+        df['day'] = df['day'].astype(int)
+        if pd.to_datetime(df['timestamp'], format='%H:%M:%S', errors='coerce').notnull().all():
+            df['timestamp'] = pd.to_datetime(df['timestamp'], format='%H:%M:%S').dt.time
+        # Check and handle missing values in other columns
+        df.dropna(inplace=True)
+        # Normalize text data in the 'time_period' column
+        df['time_period'] = df['time_period'].str.lower()
+        
+        #events_data['combined_date'] = events_data['year'].astype(str) + '-' + \ events_data['month'].astype(str) + '-' + \events_data['day'].astype(str)
+        #events_data['date'] = pd.to_datetime(events_data['combined_date'], errors='coerce') 
+        #events_data = events_data.dropna(subset=['date'])
+        #events_data = events_data.drop(['year', 'month', 'day', 'combined_date'], axis=1)
+        #events_data['timestamp'] = pd.to_datetime(events_data['timestamp'], format='%H:%M:%S').dt.time
+        return df
 
 
 
